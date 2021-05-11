@@ -1,0 +1,33 @@
+SQL Questions :
+1.Employee question - you have the following tables:
+-employees: employee_id, first_name, last_name, hire_date, salary, manager_id, department_id
+-departments: department_id, department_name, location_id
+
+We would like to know for each department top earning employee, salary, difference
+from the second earning employee.
+
+Create view help_t1
+select *
+from (
+    select t.*,
+        row_number() over (
+            partition by department_id order by salary
+            ) as rn
+    from `employees`
+    ) t
+where rn = 1;
+SELECT dep_id ,e.first,e.last, max(e.salary)-h.salary as ‘Top earning employee’
+FROM `departments` as d inner join `employees` as e on d.dep_id=e.department_id inner join help_t1 as h on d.dep_id=h.department_id
+group by dep_id
+
+2.Site visiting question - you have the following tables:
+-site_visitors : date, site, number of visitors
+-promotion dates : start_date, end_date, site, promotion_code
+
+We would like to know what percent of the site traffic was on promotion dates
+
+         select s.site,s.date, s.number_of_visitors/sum(s1.number_of_visitors)*100+'%' as 'Percent on promotion code days'
+from site_visitors as s1 ,site_visitors as s inner join promotion_dates as p on s.site=p.site
+where s.date between p.start_date and p.end_date
+and s1.date between p.start_date and p.end_date
+group by s.site,s.date
